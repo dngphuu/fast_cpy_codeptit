@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         Fast Copy for Code PTIT
 // @namespace    http://tampermonkey.net/
-// @version      2024-03-14
+// @version      1.0.0
 // @description  Add copy buttons to test samples on Code PTIT
 // @author       dngphuu
 // @match        https://code.ptit.edu.vn/student/question/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/dngphuu/fast_cpy_codeptit/main/fast_cpy_by_dngphuu.js
 // ==/UserScript==
 
 (function () {
@@ -23,11 +24,13 @@
 
     // Clean up text by removing leading whitespace from each line and adding newline at end
     function cleanupText(text) {
-        return text
-            .split("\n")
-            .map(line => line.trimStart())
-            .filter(line => line.length > 0)
-            .join("\n") + "\n";
+        return (
+            text
+                .split("\n")
+                .map((line) => line.trimStart())
+                .filter((line) => line.length > 0)
+                .join("\n") + "\n"
+        );
     }
 
     // Extract sample test cases from the question description
@@ -35,7 +38,7 @@
         const tables = document.querySelectorAll("table.MsoTableGrid");
         tables.forEach((table) => {
             const rows = table.querySelectorAll("tr");
-            
+
             // Skip header row
             for (let i = 1; i < rows.length; i++) {
                 const cells = rows[i].querySelectorAll("td");
@@ -44,28 +47,40 @@
                     const outputCell = cells[1];
 
                     // Handle input cell
-                    const inputSpan = inputCell.querySelector('span[style*="Courier New"]');
+                    const inputSpan = inputCell.querySelector(
+                        'span[style*="Courier New"]'
+                    );
                     if (inputSpan) {
                         const cleanedInput = cleanupText(inputSpan.textContent);
                         if (cleanedInput) {
                             const inputBtn = createCopyButton(
                                 cleanedInput,
-                                `Copy Input ${rows.length > 2 ? i : ''}`
+                                `Copy Input ${rows.length > 2 ? i : ""}`
                             );
-                            inputSpan.parentNode.insertBefore(inputBtn, inputSpan);
+                            inputSpan.parentNode.insertBefore(
+                                inputBtn,
+                                inputSpan
+                            );
                         }
                     }
 
                     // Handle output cell
-                    const outputSpan = outputCell.querySelector('span[style*="Courier New"]');
+                    const outputSpan = outputCell.querySelector(
+                        'span[style*="Courier New"]'
+                    );
                     if (outputSpan) {
-                        const cleanedOutput = cleanupText(outputSpan.textContent);
+                        const cleanedOutput = cleanupText(
+                            outputSpan.textContent
+                        );
                         if (cleanedOutput) {
                             const outputBtn = createCopyButton(
                                 cleanedOutput,
-                                `Copy Output ${rows.length > 2 ? i : ''}`
+                                `Copy Output ${rows.length > 2 ? i : ""}`
                             );
-                            outputSpan.parentNode.insertBefore(outputBtn, outputSpan);
+                            outputSpan.parentNode.insertBefore(
+                                outputBtn,
+                                outputSpan
+                            );
                         }
                     }
                 }
@@ -78,23 +93,40 @@
                 const outputCell = firstRow.cells[1];
 
                 // Add "Copy All Input" button
-                const allInputText = Array.from(table.querySelectorAll('td:first-child span[style*="Courier New"]'))
-                    .map(span => cleanupText(span.textContent))
-                    .filter(text => text.length > 0)
+                const allInputText = Array.from(
+                    table.querySelectorAll(
+                        'td:first-child span[style*="Courier New"]'
+                    )
+                )
+                    .map((span) => cleanupText(span.textContent))
+                    .filter((text) => text.length > 0)
                     .join("");
                 if (allInputText) {
-                    const allInputBtn = createCopyButton(allInputText, "Copy All Input");
+                    const allInputBtn = createCopyButton(
+                        allInputText,
+                        "Copy All Input"
+                    );
                     inputCell.insertBefore(allInputBtn, inputCell.firstChild);
                 }
 
                 // Add "Copy All Output" button
-                const allOutputText = Array.from(table.querySelectorAll('td:last-child span[style*="Courier New"]'))
-                    .map(span => cleanupText(span.textContent))
-                    .filter(text => text.length > 0)
+                const allOutputText = Array.from(
+                    table.querySelectorAll(
+                        'td:last-child span[style*="Courier New"]'
+                    )
+                )
+                    .map((span) => cleanupText(span.textContent))
+                    .filter((text) => text.length > 0)
                     .join("");
                 if (allOutputText) {
-                    const allOutputBtn = createCopyButton(allOutputText, "Copy All Output");
-                    outputCell.insertBefore(allOutputBtn, outputCell.firstChild);
+                    const allOutputBtn = createCopyButton(
+                        allOutputText,
+                        "Copy All Output"
+                    );
+                    outputCell.insertBefore(
+                        allOutputBtn,
+                        outputCell.firstChild
+                    );
                 }
             }
         });

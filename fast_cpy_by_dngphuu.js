@@ -23,71 +23,78 @@
 
     // Clean up text by removing leading whitespace from each line and adding newline at end
     function cleanupText(text) {
-        const lines = text.split("\n");
-        let finalText = "";
-
-        // Process lines except the last one
-        for (let i = 0; i < lines.length - 1; i++) {
-            finalText += lines[i].trimStart() + "\n";
-        }
-
-        // Handle last line - only add newline if it's not empty
-        if (lines.length > 0) {
-            const lastLine = lines[lines.length - 1].trimStart();
-            if (lastLine) {
-                finalText += lastLine + "\n";
-            }
-        }
-
-        return finalText;
+        return text
+            .split("\n")
+            .map(line => line.trimStart())
+            .filter(line => line.length > 0)
+            .join("\n") + "\n";
     }
 
     // Extract sample test cases from the question description
     function extractTestCases() {
-        const tables = document.querySelectorAll(".MsoTableGrid");
+        const tables = document.querySelectorAll("table.MsoTableGrid");
         tables.forEach((table) => {
-            // Get all rows
             const rows = table.querySelectorAll("tr");
+            
+            // Skip header row
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll("td");
+                if (cells.length >= 2) {
+                    const inputCell = cells[0];
+                    const outputCell = cells[1];
 
-            // Skip if less than 2 rows (need header + data)
-            if (rows.length < 2) return;
+                    // Handle input cell
+                    const inputSpan = inputCell.querySelector('span[style*="Courier New"]');
+                    if (inputSpan) {
+                        const cleanedInput = cleanupText(inputSpan.textContent);
+                        if (cleanedInput) {
+                            const inputBtn = createCopyButton(
+                                cleanedInput,
+                                `Copy Input ${rows.length > 2 ? i : ''}`
+                            );
+                            inputSpan.parentNode.insertBefore(inputBtn, inputSpan);
+                        }
+                    }
 
-            // Get data cells (skip header row)
-            const dataCells = rows[1].querySelectorAll("td");
-            if (dataCells.length >= 2) {
-                const inputCell = dataCells[0];
-                const outputCell = dataCells[1];
+                    // Handle output cell
+                    const outputSpan = outputCell.querySelector('span[style*="Courier New"]');
+                    if (outputSpan) {
+                        const cleanedOutput = cleanupText(outputSpan.textContent);
+                        if (cleanedOutput) {
+                            const outputBtn = createCopyButton(
+                                cleanedOutput,
+                                `Copy Output ${rows.length > 2 ? i : ''}`
+                            );
+                            outputSpan.parentNode.insertBefore(outputBtn, outputSpan);
+                        }
+                    }
+                }
+            }
 
-                // Extract text only from Courier New font spans for input
-                if (inputCell) {
-                    const courierSpans = inputCell.querySelectorAll(
-                        'span[style*="Courier New"]'
-                    );
-                    const inputText = Array.from(courierSpans)
-                        .map((span) => span.textContent)
-                        .join("\n");
-                    const cleanedInput = cleanupText(inputText);
-                    const inputBtn = createCopyButton(
-                        cleanedInput,
-                        "Copy Input"
-                    );
-                    inputCell.insertBefore(inputBtn, inputCell.firstChild);
+            // Add "Copy All" buttons if there are multiple test cases
+            const firstRow = rows[0];
+            if (rows.length > 2) {
+                const inputCell = firstRow.cells[0];
+                const outputCell = firstRow.cells[1];
+
+                // Add "Copy All Input" button
+                const allInputText = Array.from(table.querySelectorAll('td:first-child span[style*="Courier New"]'))
+                    .map(span => cleanupText(span.textContent))
+                    .filter(text => text.length > 0)
+                    .join("");
+                if (allInputText) {
+                    const allInputBtn = createCopyButton(allInputText, "Copy All Input");
+                    inputCell.insertBefore(allInputBtn, inputCell.firstChild);
                 }
 
-                // Extract text only from Courier New font spans for output
-                if (outputCell) {
-                    const courierSpans = outputCell.querySelectorAll(
-                        'span[style*="Courier New"]'
-                    );
-                    const outputText = Array.from(courierSpans)
-                        .map((span) => span.textContent)
-                        .join("\n");
-                    const cleanedOutput = cleanupText(outputText);
-                    const outputBtn = createCopyButton(
-                        cleanedOutput,
-                        "Copy Output"
-                    );
-                    outputCell.insertBefore(outputBtn, outputCell.firstChild);
+                // Add "Copy All Output" button
+                const allOutputText = Array.from(table.querySelectorAll('td:last-child span[style*="Courier New"]'))
+                    .map(span => cleanupText(span.textContent))
+                    .filter(text => text.length > 0)
+                    .join("");
+                if (allOutputText) {
+                    const allOutputBtn = createCopyButton(allOutputText, "Copy All Output");
+                    outputCell.insertBefore(allOutputBtn, outputCell.firstChild);
                 }
             }
         });

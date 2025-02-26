@@ -7,6 +7,7 @@
 // @match        https://code.ptit.edu.vn/student/question/*
 // @grant        none
 // @updateURL    https://raw.githubusercontent.com/dngphuu/fast_cpy_codeptit/main/fast_cpy_by_dngphuu.js
+// @downloadURL    https://raw.githubusercontent.com/dngphuu/fast_cpy_codeptit/main/fast_cpy_by_dngphuu.js
 // ==/UserScript==
 
 (function () {
@@ -212,7 +213,7 @@
     setTimeout(() => {
         observer.observe(document.body, {
             childList: true,
-            subtree: true
+            subtree: true,
         });
         // Run initial extraction in case content is already loaded
         extractTestCases();

@@ -29,7 +29,7 @@
                 .split("\n")
                 .map((line) => line.trimStart())
                 .filter((line) => line.length > 0)
-                .join("\n") + "\n"
+                .trim() + "\n"
         );
     }
 
@@ -38,6 +38,7 @@
         const tables = document.querySelectorAll("table.MsoTableGrid");
         tables.forEach((table) => {
             const rows = table.querySelectorAll("tr");
+            if (rows.length === 0) return;
 
             // Skip header row
             for (let i = 1; i < rows.length; i++) {
@@ -88,19 +89,21 @@
 
             // Add "Copy All" buttons if there are multiple test cases
             const firstRow = rows[0];
-            if (rows.length > 2) {
+            if (rows.length > 2 && firstRow.cells.length >= 2) {
                 const inputCell = firstRow.cells[0];
                 const outputCell = firstRow.cells[1];
 
                 // Add "Copy All Input" button
-                const allInputText = Array.from(
-                    table.querySelectorAll(
-                        'td:first-child span[style*="Courier New"]'
+                const allInputText =
+                    Array.from(
+                        table.querySelectorAll(
+                            'td:first-child span[style*="Courier New"]'
+                        )
                     )
-                )
-                    .map((span) => cleanupText(span.textContent))
-                    .filter((text) => text.length > 0)
-                    .join("");
+                        .map((span) => cleanupText(span.textContent))
+                        .filter((text) => text.length > 0)
+                        .join("")
+                        .trim() + "\n";
                 if (allInputText) {
                     const allInputBtn = createCopyButton(
                         allInputText,
@@ -110,14 +113,16 @@
                 }
 
                 // Add "Copy All Output" button
-                const allOutputText = Array.from(
-                    table.querySelectorAll(
-                        'td:last-child span[style*="Courier New"]'
+                const allOutputText =
+                    Array.from(
+                        table.querySelectorAll(
+                            'td:last-child span[style*="Courier New"]'
+                        )
                     )
-                )
-                    .map((span) => cleanupText(span.textContent))
-                    .filter((text) => text.length > 0)
-                    .join("");
+                        .map((span) => cleanupText(span.textContent))
+                        .filter((text) => text.length > 0)
+                        .join("")
+                        .trim() + "\n";
                 if (allOutputText) {
                     const allOutputBtn = createCopyButton(
                         allOutputText,
@@ -190,6 +195,26 @@
         return button;
     }
 
-    // Initialize script
-    extractTestCases();
+    // Wait for content to be loaded
+    document.addEventListener("DOMContentLoaded", extractTestCases);
+
+    // Watch for dynamic content changes
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.addedNodes.length) {
+                extractTestCases();
+                break;
+            }
+        }
+    });
+
+    // Start observing after a short delay to ensure initial content is loaded
+    setTimeout(() => {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        // Run initial extraction in case content is already loaded
+        extractTestCases();
+    }, 500);
 })();
